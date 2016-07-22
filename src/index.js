@@ -19,27 +19,31 @@ export default class extends Accounts {
       this.knex.schema.createTableIfNotExists('account-services', (table) => {
         table.timestamps();
         table.increments('id');
-        table.string('accountId').references('id').inTable('accounts');
+        // TODO This relation should be between ids, not usernames.
+        table.string('account').references('username').inTable('accounts');
         table.string('service').notNullable();
         // table.json('profile').notNullable();
       }),
     ]);
   }
-  findUser(args) {
+  findUser({ username }) {
+    return this.knex('accounts').where({
+      username,
+    }).innerJoin('account-services', 'accounts.username', 'account-services.account');
   }
   createUser(args, service, profile) {
     let { username } = args;
     username = trim(username);
-    let accountId;
+    let userId;
     return this.knex.transaction(transaction =>
       Promise.resolve()
         .then(() => transaction.insert({
           username,
         }).into('accounts').then(id => {
-          accountId = id;
+          userId = id;
         }))
        .then(() => transaction.insert({
-         accountId,
+         account: username,
          service,
        }).into('account-services'))
     );
