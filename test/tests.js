@@ -13,13 +13,13 @@ describe('Accounts', () => {
   });
   describe('createUser', () => {
     it('creates a user', done => {
-      accounts.createUser({ username: 'user1' }, 'local').then(result => {
+      accounts.createUser({ username: 'user1', password: '123456' }, 'local').then(result => {
         expect(result).to.have.length(1);
         done();
       });
     });
     it('only create users with unique usernames', done => {
-      accounts.createUser({ username: 'user1' }, 'local').catch(err => {
+      accounts.createUser({ username: 'user1', password: '123456' }, 'local').catch(err => {
         expect(err).to.be.ok; // eslint-disable-line no-unused-expressions
         done();
       });

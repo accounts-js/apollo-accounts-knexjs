@@ -21,8 +21,8 @@ export default class extends Accounts {
         table.increments('id');
         // TODO This relation should be between ids, not usernames.
         table.string('account').references('username').inTable('accounts');
-        table.string('service').notNullable();
-        // table.json('profile').notNullable();
+        table.string('service');
+        table.json('profile').notNullable();
       }),
     ]);
   }
@@ -31,20 +31,26 @@ export default class extends Accounts {
       username,
     }).innerJoin('account-services', 'accounts.username', 'account-services.account');
   }
-  createUser(args, service, profile) {
-    let { username } = args;
-    username = trim(username);
+  createUser(args, service) {
+    const { username, password } = args;
+    const usernameTrimmed = trim(username);
     let userId;
+    const hash = this.hashPassword(password);
+    const profile = JSON.stringify({
+      userId,
+      hash,
+    });
     return this.knex.transaction(transaction =>
       Promise.resolve()
         .then(() => transaction.insert({
-          username,
+          username: usernameTrimmed,
         }).into('accounts').then(id => {
           userId = id;
         }))
        .then(() => transaction.insert({
-         account: username,
+         account: usernameTrimmed,
          service,
+         profile,
        }).into('account-services'))
     );
   }
