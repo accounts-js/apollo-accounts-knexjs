@@ -14,13 +14,10 @@ export default class extends Accounts {
       this.knex.schema.createTableIfNotExists('accounts', (table) => {
         table.timestamps();
         table.increments('id');
-        table.string('username').unique().notNullable();
       }),
       this.knex.schema.createTableIfNotExists('account-services', (table) => {
-        table.timestamps();
         table.increments('id');
-        // TODO This relation should be between ids, not usernames.
-        table.string('account').references('username').inTable('accounts');
+        table.integer('userId', 11).unsigned().references('id').inTable('accounts');
         table.string('service');
         table.json('profile').notNullable();
       }),
