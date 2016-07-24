@@ -5,7 +5,10 @@ import { expect } from 'chai';
 
 
 describe('Accounts', () => {
-  const accounts = new Accounts(knexConfig);
+  let accounts;
+  before(() => {
+    accounts = new Accounts(knexConfig);
+  });
   after((done) => {
     knexCleaner.clean(accounts.knex).then(() => {
       done();
@@ -25,16 +28,16 @@ describe('Accounts', () => {
       });
     });
   });
-  describe('findUser', () => {
-    it('finds a user', done => {
-      accounts.findUser({ username: 'user1' }).then(result => {
-        expect(result).to.have.length(1);
+  describe('findIdByUsername', () => {
+    it('finds user id', done => {
+      accounts.findIdByUsername('user1').then(id => {
+        expect(id).to.equal(1);
         done();
       });
     });
-    it('does not find a user', done => {
-      accounts.findUser({ username: 'user2' }).then(result => {
-        expect(result).to.have.length(0);
+    it('does not find a user id', done => {
+      accounts.findIdByUsername('user2').then(id => {
+        expect(id).to.be.undefined; // eslint-disable-line no-unused-expressions
         done();
       });
     });
