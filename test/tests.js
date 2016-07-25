@@ -1,33 +1,62 @@
+/* eslint-disable no-unused-expressions */
+
 import knexConfig from './knex';
 import Accounts from '../src/';
 import knexCleaner from 'knex-cleaner';
 import { expect } from 'chai';
 
-
 describe('Accounts', () => {
   let accounts;
-  before(() => {
+  before((done) => {
     accounts = new Accounts(knexConfig);
+    knexCleaner.clean(accounts.knex, { mode: 'delete' }).then(() => {
+      done();
+    });
   });
   after((done) => {
-    knexCleaner.clean(accounts.knex).then(() => {
+    knexCleaner.clean(accounts.knex, { mode: 'delete' }).then(() => {
       done();
     });
   });
   describe('createUser', () => {
-    it('creates a user', done => {
-      accounts.createUser({ username: 'user1', password: '123456' }, 'local').then(result => {
-        expect(result).to.have.length(1);
-        done();
+    it('creates a user locally', done => {
+      accounts.createUser({
+        username: 'user1',
+        email: 'user1@user.com',
+        service: 'local',
+        profile: 'profile',
+      }).then(accountId => {
+        expect(accountId).to.equal(1);
+        Promise.all([
+          accounts.knex('account-services')
+            .first('service', 'identifier', 'profile')
+            .where({ accountId })
+            .then(result => {
+              expect(result.service).to.equal('local');
+              expect(result.profile).to.equal('profile');
+            }),
+          accounts.knex('account-emails')
+            .first('email')
+            .where({ accountId })
+            .then(result => {
+              expect(result.email).to.equal('user1@user.com');
+            }),
+        ]).then(() => done());
       });
     });
-    it('only create users with unique usernames', done => {
-      accounts.createUser({ username: 'user1', password: '123456' }, 'local').catch(err => {
-        expect(err).to.be.ok; // eslint-disable-line no-unused-expressions
+    it('requires unique usernames', done => {
+      accounts.createUser({
+        username: 'user1',
+        email: 'user1@user.com',
+        service: 'local',
+        profile: 'profile',
+      }).catch(err => {
+        expect(err).to.be.ok;
         done();
       });
     });
   });
+  /*
   describe('findIdByUsername', () => {
     it('finds user id', done => {
       accounts.findIdByUsername('user1').then(id => {
@@ -37,9 +66,10 @@ describe('Accounts', () => {
     });
     it('does not find a user id', done => {
       accounts.findIdByUsername('user2').then(id => {
-        expect(id).to.be.undefined; // eslint-disable-line no-unused-expressions
+        // expect(id).to.be.undefined;
         done();
       });
     });
   });
+  */
 });

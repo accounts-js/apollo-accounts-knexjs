@@ -23,12 +23,13 @@ export default class extends Accounts {
   }
   setupEmailTable(table) {
     table.integer('accountId', 11).unsigned().references('id').inTable('accounts');
-    table.string('email');
+    table.string('email').unique();
+    table.index('email');
   }
   setupServiceTable(table) {
     table.integer('accountId', 11).unsigned().references('id').inTable('accounts');
     // TODO Do foreign keys get automatically indexed?
-    table.index('accountId');
+    // table.index('accountId');
     // This is a unique identifier from the 3rd party service which can be used to find a user in
     // our local database. Usually this field comes from `profile.id`.
     table.string('identifier');
@@ -61,32 +62,39 @@ export default class extends Accounts {
     }).innerJoin('account-services', 'accounts.username', 'account-services.account');
   }
   */
-  createUser(args, service) {
-    const { username, password } = args;
-    const usernameTrimmed = trim(username);
-    let userId;
-    const hash = this.hashPassword(password);
-    const profile = JSON.stringify({
-      userId,
-      hash,
-    });
-    return this.knex.transaction(transaction =>
-      Promise.resolve()
-        .then(() => transaction.insert({
-          username: usernameTrimmed,
-        }).into('accounts').then(id => {
-          userId = id;
-        }))
-       .then(() => transaction.insert({
-         account: usernameTrimmed,
-         service,
-         profile,
-       }).into('account-services'))
-    );
+  createUser({ username, email, service, identifier, profile }) {
+    // TODO Add validations
+    const usernameClean = username && trim(username);
+    const emailClean = email && trim(email);
+    let accountId;
+    return this.knex.transaction(trx => {
+      // const userInsert = usernameClean ?
+      this.knex.insert({ username: usernameClean })
+          .into('accounts')
+          .transacting(trx)
+          .then(ids => {
+            accountId = ids[0];
+            return Promise.resolve()
+              .then(() =>
+                emailClean && trx.insert({ accountId, email: emailClean }).into('account-emails'))
+              .then(() =>
+                trx.insert({
+                  identifier: identifier || accountId, accountId, service, profile,
+                }).into('account-services')
+              );
+          })
+          .then(trx.commit)
+          .catch(trx.rollback);
+    }).then(ids => ids[0]);
   }
   findIdByUsername(username) {
     return this.knex('accounts').first('id').where({
       username,
     }).then(row => row && row.id);
+  }
+  findIdByEmail(email) {
+    return this.knex('account-emails').first('accountId').where({
+      email,
+    }).then(row => row && row.accountId);
   }
 }
