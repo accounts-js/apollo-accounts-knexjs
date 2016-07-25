@@ -55,6 +55,17 @@ describe('Accounts', () => {
         done();
       });
     });
+    it('requires unique emails', done => {
+      accounts.createUser({
+        username: 'user2',
+        email: 'user1@user.com',
+        service: 'local',
+        profile: 'profile',
+      }).catch(err => {
+        expect(err).to.be.ok;
+        done();
+      });
+    });
   });
   /*
   describe('findIdByUsername', () => {
