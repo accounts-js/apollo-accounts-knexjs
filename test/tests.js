@@ -67,7 +67,6 @@ describe('Accounts', () => {
       });
     });
   });
-  /*
   describe('findIdByUsername', () => {
     it('finds user id', done => {
       accounts.findIdByUsername('user1').then(id => {
@@ -76,11 +75,24 @@ describe('Accounts', () => {
       });
     });
     it('does not find a user id', done => {
-      accounts.findIdByUsername('user2').then(id => {
-        // expect(id).to.be.undefined;
+      accounts.findIdByUsername('user2').then((id) => {
+        expect(id).to.be.undefined;
         done();
       });
     });
   });
-  */
+  describe('findIdByEmail', () => {
+    it('finds user id', done => {
+      accounts.findIdByEmail('user1@user.com').then(id => {
+        expect(id).to.equal(1);
+        done();
+      });
+    });
+    it('does not find a user id', done => {
+      accounts.findIdByEmail('user2@user.com').then((id) => {
+        expect(id).to.be.undefined;
+        done();
+      });
+    });
+  });
 });
