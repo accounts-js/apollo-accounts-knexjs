@@ -55,13 +55,6 @@ export default class extends Accounts {
       }),
     ]);
   }
-  /*
-  findUser({ username }) {
-    return this.knex('accounts').where({
-      username,
-    }).innerJoin('account-services', 'accounts.username', 'account-services.account');
-  }
-  */
   createUser({ username, email, service, identifier, profile }) {
     // TODO Add validations
     const usernameClean = username && trim(username);
@@ -96,5 +89,27 @@ export default class extends Accounts {
     return this.knex('account-emails').first('accountId').where({
       email,
     }).then(row => row && row.accountId);
+  }
+  findIdByService(service, identifier) {
+    return this.knex('account-services')
+      .first('accountId')
+      .where({
+        service,
+        identifier,
+      }).then(row => row && row.accountId);
+  }
+  findService(accountId, identifier) {
+    return this.knex('account-services')
+      .first('accountId', 'identifier', 'service', 'profile')
+      .where({
+        accountId,
+        identifier,
+      }).then(row => row);
+  }
+  findById(id) {
+    return this.knex('accounts')
+      .first('username')
+      .where({ id })
+      .then(row => row);
   }
 }

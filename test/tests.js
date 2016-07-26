@@ -95,4 +95,49 @@ describe('Accounts', () => {
       });
     });
   });
+  describe('findService', () => {
+    it('finds a service', done => {
+      accounts.findService(1, 1).then(service => {
+        expect(service.accountId).to.equal(1);
+        expect(service.identifier).to.equal('1');
+        expect(service.service).to.equal('local');
+        expect(service.profile).to.equal('profile');
+        done();
+      });
+    });
+    it('does not find a service for which does not exist', done => {
+      accounts.findService(2, 2).then(service => {
+        expect(service).to.be.undefined;
+        done();
+      });
+    });
+  });
+  describe('findIdByService', () => {
+    it('finds account id given a service', done => {
+      accounts.findIdByService('local', '1').then(accountId => {
+        expect(accountId).to.be.equal(1);
+        done();
+      });
+    });
+    it('does not find an account id given a service which does not exist', done => {
+      accounts.findIdByService('local', '2').then(accountId => {
+        expect(accountId).to.be.undefined;
+        done();
+      });
+    });
+  });
+  describe('findById', () => {
+    it('finds a user given an id', done => {
+      accounts.findById(1).then(user => {
+        expect(user.username).to.be.equal('user1');
+        done();
+      });
+    });
+    it('does not find a user given an id which does not exist', done => {
+      accounts.findById(2).then(user => {
+        expect(user).to.be.undefined;
+        done();
+      });
+    });
+  });
 });
