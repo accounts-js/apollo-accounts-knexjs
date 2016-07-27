@@ -72,7 +72,10 @@ export default class extends Accounts {
                 emailClean && trx.insert({ accountId, email: emailClean }).into('account-emails'))
               .then(() =>
                 trx.insert({
-                  identifier: identifier || accountId, accountId, service, profile,
+                  identifier: identifier || accountId,
+                  profile: JSON.stringify(profile),
+                  accountId,
+                  service,
                 }).into('account-services')
               );
           })
@@ -104,12 +107,24 @@ export default class extends Accounts {
       .where({
         accountId,
         identifier,
-      }).then(row => row);
+      });
   }
   findById(id) {
     return this.knex('accounts')
-      .first('username')
-      .where({ id })
-      .then(row => row);
+      .first()
+      .where({ id });
+  }
+  findForSession(accountId, identifier) {
+    return this.knex('accounts')
+      .first()
+      .where({ id: accountId })
+      .innerJoin('account-services', 'accounts.id', 'account-services.accountId')
+      .where({ identifier })
+      .then(res => {
+        // profile is stored as JSON in the database, here we parse it back to a JS object.
+        // eslint-disable-next-line no-param-reassign
+        res.profile = res.profile && JSON.parse(res.profile);
+        return res;
+      });
   }
 }

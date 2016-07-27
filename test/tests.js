@@ -33,7 +33,7 @@ describe('Accounts', () => {
             .where({ accountId })
             .then(result => {
               expect(result.service).to.equal('local');
-              expect(result.profile).to.equal('profile');
+              expect(result.profile).to.equal(JSON.stringify('profile'));
             }),
           accounts.knex('account-emails')
             .first('email')
@@ -101,7 +101,7 @@ describe('Accounts', () => {
         expect(service.accountId).to.equal(1);
         expect(service.identifier).to.equal('1');
         expect(service.service).to.equal('local');
-        expect(service.profile).to.equal('profile');
+        expect(service.profile).to.equal(JSON.stringify('profile'));
         done();
       });
     });
@@ -136,6 +136,15 @@ describe('Accounts', () => {
     it('does not find a user given an id which does not exist', done => {
       accounts.findById(2).then(user => {
         expect(user).to.be.undefined;
+        done();
+      });
+    });
+  });
+  describe('findForSession', () => {
+    it('finds a user to be set for the passport session', done => {
+      accounts.findForSession(1, 1).then(user => {
+        expect(user.username).to.equal('user1');
+        expect(user.profile).to.equal('profile');
         done();
       });
     });
