@@ -4,17 +4,19 @@ import knexConfig from './knex';
 import Accounts from '../src/';
 import knexCleaner from 'knex-cleaner';
 import { expect } from 'chai';
+import initKnex from 'knex';
 
 describe('Accounts', () => {
+  const knex = initKnex(knexConfig);
   let accounts;
   before((done) => {
-    accounts = new Accounts(knexConfig);
-    knexCleaner.clean(accounts.knex, { mode: 'delete' }).then(() => {
+    accounts = new Accounts(knex);
+    knexCleaner.clean(knex, { mode: 'delete' }).then(() => {
       done();
     });
   });
   after((done) => {
-    knexCleaner.clean(accounts.knex, { mode: 'delete' }).then(() => {
+    knexCleaner.clean(knex, { mode: 'delete' }).then(() => {
       done();
     });
   });
