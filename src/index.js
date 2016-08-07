@@ -1,4 +1,4 @@
-import { Accounts } from 'apollo-accounts';
+import { Accounts } from 'apollo-accounts-server';
 import { trim } from 'lodash';
 
 export default class extends Accounts {
