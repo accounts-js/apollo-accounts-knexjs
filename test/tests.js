@@ -28,7 +28,8 @@ describe('Accounts', () => {
         email: 'user1@user.com',
         provider: 'local',
         profile: 'profile',
-      }).then(accountId => {
+      }).then(res => {
+        const accountId = res.id;
         expect(accountId).to.equal(1);
         Promise.all([
           accounts.knex('account-providers')

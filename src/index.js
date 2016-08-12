@@ -70,7 +70,7 @@ export default class extends Accounts {
           })
           .then(trx.commit)
           .catch(trx.rollback);
-    }).then(ids => ids[0]);
+    }).then(ids => ({ id: ids[0] }));
   }
   findByUsername(username) {
     return this.knex('accounts').first('id').where({
