@@ -26,6 +26,10 @@ export default class extends Accounts {
     table.string('identifier');
     table.json('profile');
   }
+  setupHashesTable(table) {
+    table.integer('accountId', 11).unsigned().references('id').inTable('accounts');
+    table.string('hash');
+  }
   // TODO Cascade on delete and update
   createTable() {
     Promise.all([
@@ -43,9 +47,12 @@ export default class extends Accounts {
       this.knex.schema.createTableIfNotExists('account-providers', (table) => {
         this.setupProvidersTable(table);
       }),
+      this.knex.schema.createTableIfNotExists('account-hashes', (table) => {
+        this.setupHashesTable(table);
+      }),
     ]);
   }
-  createUser({ username, email, provider, identifier, profile }) {
+  createUser({ username, email, provider, identifier, profile, hash }) {
     // TODO Add validations
     const usernameClean = username && trim(username);
     const emailClean = email && trim(email);
@@ -59,18 +66,27 @@ export default class extends Accounts {
             return Promise.resolve()
               .then(() =>
                 emailClean && trx.insert({ accountId, email: emailClean }).into('account-emails'))
-              .then(() =>
-                trx.insert({
-                  accountId,
-                  provider,
-                  identifier: identifier || accountId,
-                  profile: JSON.stringify(profile),
-                }).into('account-providers')
-              );
+              .then(() => {
+                let toReturn;
+                if (provider) {
+                  toReturn = trx.insert({
+                    accountId,
+                    provider,
+                    identifier: identifier || accountId,
+                    profile: JSON.stringify(profile),
+                  }).into('account-providers');
+                } else {
+                  toReturn = trx.insert({
+                    accountId,
+                    hash,
+                  }).into('account-hashes');
+                }
+                return toReturn;
+              });
           })
           .then(trx.commit)
           .catch(trx.rollback);
-    }).then(ids => ({ id: ids[0] }));
+    }).then(() => accountId);
   }
   findByUsername(username) {
     return this.knex('accounts').first('id').where({
@@ -89,5 +105,12 @@ export default class extends Accounts {
         provider,
         identifier,
       }).then(row => row && row.accountId);
+  }
+  findHashById(accountId) {
+    return this.knex('account-hashes')
+      .first('hash')
+      .where({
+        accountId,
+      }).then(row => row && row.hash);
   }
 }

@@ -28,8 +28,7 @@ describe('Accounts', () => {
         email: 'user1@user.com',
         provider: 'local',
         profile: 'profile',
-      }).then(res => {
-        const accountId = res.id;
+      }).then(accountId => {
         expect(accountId).to.equal(1);
         Promise.all([
           accounts.knex('account-providers')
@@ -111,6 +110,27 @@ describe('Accounts', () => {
         expect(accountId).to.be.undefined;
         done();
       });
+    });
+  });
+  describe('findHashById', () => {
+    it('finds hash given user id', (done) => {
+      accounts.registerUser({
+        username: 'UserA',
+        password: '123456',
+      }).then(id => {
+        accounts.findHashById(id)
+          .then((hash) => {
+            expect(hash).to.be.a.string;
+            done();
+          });
+      });
+    });
+    it('does not find a hash given a user which does not exist', (done) => {
+      accounts.findHashById(123)
+          .then((hash) => {
+            expect(hash).to.be.undefined;
+            done();
+          });
     });
   });
 });
