@@ -11,7 +11,7 @@ describe('Accounts', () => {
   const knex = initKnex(knexConfig);
   let accounts;
   before((done) => {
-    accounts = new Accounts(knex);
+    accounts = new Accounts({}, knex);
     knexCleaner.clean(knex, { mode: 'delete' }).then(() => {
       done();
     });

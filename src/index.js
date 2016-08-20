@@ -2,11 +2,9 @@ import { Accounts } from 'apollo-accounts-server';
 import { trim } from 'lodash';
 
 export default class extends Accounts {
-  constructor(knex, options = {}) {
-    super();
+  constructor(config, knex) {
+    super(config);
     this.knex = knex;
-    // TODO Configurable table and column names
-    this.options = options;
     this.createTable();
   }
   setupAccountTable(table) {
